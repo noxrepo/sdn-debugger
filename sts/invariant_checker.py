@@ -3,8 +3,9 @@ import urllib2
 
 from pox.openflow.libopenflow_01 import *
 from debugger_entities import *
-import headerspace.topology_loader.pox_topology_loader as hsa_topo
+import headerspace.topology_loader.topology_loader as hsa_topo
 import headerspace.headerspace.applications as hsa
+#import nom_snapshot_protobuf.nom_snapshot_pb2 as nom_snapshot
 import nom_snapshot_json as nom_snapshot
 import pickle
 import logging
@@ -12,19 +13,13 @@ import collections
 log = logging.getLogger("invariant_checker")
 
 class InvariantChecker(object):
-  def __init__(self, control_url):
-    self.control_url = control_url
-
+  def __init__(self, snapshotService):
+    self.snapshotService = snapshotService
+  
   def fetch_controller_snapshot(self):
-    req = urllib2.Request('http://localhost:8080/wm/core/proact')
-    response = urllib2.urlopen(req)
-    json_data = response.read()
-    l = json.loads(json_data)
-    res = []
-    for m in l:
-      res.append(nom_snapshot.Snapshot.from_json_map(m))
-    return res
-
+    self.snapshotService.fetchSnapshot()
+    return self.snapshotService.snapshot
+  
   # --------------------------------------------------------------#
   #                    Invariant checks                           #
   # --------------------------------------------------------------#
