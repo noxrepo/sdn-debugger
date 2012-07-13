@@ -341,6 +341,7 @@ def generate_transfer_function(tf, software_switch):
   table = software_switch.table
   all_port_ids = map(lambda port: get_uniq_port_id(software_switch, port), software_switch.ports.values())
   for flow_entry in table.entries:
+    print "FLOW_ENTRY", flow_entry
     # TODO: For now, we're assuming completely non-overlapping entries. Need to 
     #       deal with priorities properly!
     ofp_match = flow_entry.match
@@ -406,6 +407,7 @@ def of_action_from_protobuf_action(protobuf_action):
   else:
     raise RuntimeError("Unsupported Action %s" % protobuf_action.type)
 
+"""
 def tf_from_protobuf_switch(ntf, rules, real_switch):
   # clone the real switch, insert flow entries from policy, run
   # generate_transfer_function()
@@ -415,6 +417,16 @@ def tf_from_protobuf_switch(ntf, rules, real_switch):
 
     dummy_switch.table.add_entry(flow_entry)
   return generate_transfer_function(ntf, dummy_switch)
+"""
+
+def tf_from_switch(ntf, switch, real_switch):
+  # clone the real switch, insert flow entries from policy, run
+  # generate_transfer_function()
+  dummy_switch = SwitchImpl(real_switch.dpid, ports=real_switch.ports.values())
+  for entry in switch.flow_table.entries:
+    dummy_switch.table.add_entry(entry)
+    #print "Added Entry:", entry
+  return generate_transfer_function(ntf, dummy_switch)  
 
 def get_uniq_port_id(switch, port):
   ''' HSA assumes uniquely labeled ports '''
