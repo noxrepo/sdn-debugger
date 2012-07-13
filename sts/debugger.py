@@ -41,7 +41,7 @@ class FuzzTester (EventMixin):
   """
   def __init__(self, fuzzer_params="fuzzer_params.cfg", interactive=True,
                check_interval=35, trace_interval=10, random_seed=0.0,
-               delay=0.1, dataplane_trace=None, control_socket=None):
+               delay=0.1, dataplane_trace=None, snapshotService=None):
     self.interactive = interactive
     self.check_interval = check_interval
     self.trace_interval = trace_interval
@@ -79,7 +79,7 @@ class FuzzTester (EventMixin):
     self.seed = random_seed
     self.random = random.Random(self.seed)
     self.traffic_generator = TrafficGenerator(self.random)
-    self.invariant_checker = InvariantChecker(control_socket)
+    self.invariant_checker = InvariantChecker(snapshotService)
 
     # TODO: future feature: log all events, and allow user to (interactively)
     # replay the execution
