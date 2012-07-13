@@ -82,8 +82,10 @@ parser.add_argument("-s", "--steps", type=int, metavar="nsteps",
 parser.add_argument("-p", "--port", type=int, metavar="port",
                     help="base port to use for controllers", default=6633)
 
-parser.add_argument("-l", "--snapshotport", type=int, metavar="snapshotport",
-                    help="port to use for controllers for snapshotting", default=6634)
+parser.add_argument("-l", "--controller", type=str,
+                    choices=["pox", "floodlight"], metavar="controller",
+                    dest="controller",
+                    help="controller (for snapshotting)", default="pox")
 
 parser.add_argument("-f", "--fuzzer-params", default="fuzzer_params.cfg",
                     help="optional parameters for the fuzzer (e.g. fail rate)")
@@ -189,13 +191,16 @@ try:
                    topology_generator.populate(controllers, create_worker, num_switches=args.num_switches)
 
   # For instrumenting the controller
-  # TODO: This ugly hack has to be cleaned up ASAP ASAP
-  control_socket = None #connect_socket_with_backoff('', 6634)
+  from sts.snapshot import *
+  if args.controller == "pox":
+    snapshotService = PoxSnapshotService()
+  elif args.controller == "floodlight":
+    snapshotService = FloodlightSnapshotService()
 
   simulator = FuzzTester(fuzzer_params=args.fuzzer_params, interactive=args.interactive,
                         check_interval=args.check_interval,
                         random_seed=args.random_seed, delay=args.delay,
-                        dataplane_trace=args.trace_file, control_socket=control_socket)
+                        dataplane_trace=args.trace_file, snapshotService=snapshotService)
   simulator.simulate(panel, switch_impls, network_links, hosts, access_links, steps=args.steps)
 finally:
   kill_children()
